@@ -43,12 +43,12 @@ def ask_ai(request):
 
 def openrouter(prompt):
     headers={
-        "Authorization": "Bearer {API_KEY}",
+        "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
     data = {
-        "model": "deepseek/deepseek-r1-distill-qwen-32b:free",
+        "model": "deepseek/deepseek-chat-v3-0324:free",
         "messages": [
             {"role": "user", "content": prompt}
         ]
@@ -85,8 +85,8 @@ def generate_paper_view(request):
                 f" Format the questions clearly and structure it like a real UNEB exam paper, though, I don't want you to add fluff like instructions. Just give me mainly the questions."
                 f"Keep in mind that the UNEB format for physics in A-level has no multiple choice and only has essay questions"
                 f"Each question is comprised of parts a through e (sometimes stopping at a part d or extending to part f). the first parts are usually asking for a definition or statement of a law, then come explanation questions and a calculation part and finally the description of an experimental setup"
-                f"Finally, generate an accurate and detailed answer guide for the paper you have just generated. I want all the answers presented in the guide to be very well thought out and accurate. Be sure that the questions and the answer guide are separated by a clear heading/separator labelled 'Marking Guide'."
-                f"Make sure that the paper and the answer guide are generated at the same time, one after the other"
+                f"Finally, generate an accurate and detailed answer guide for the paper you have just generated for all the sections at once(dont ask me whether or not to generate the answer guide for each section individually). I want all the answers presented in the guide to be very well thought out and accurate. Be sure that the questions and the answer guide are separated by a clear heading/separator labelled 'Marking Guide' please be case sensitive with the heading Marking Guide."
+                f"I also want you to remove all sorts of fluff like the typical 'would you like...' and 'let me know if..' that usually come at the end of any AI generated response"
             )
             #marking_prompt = (f"Generate a marking guide for the A-Level Ugandan Physics paper you just generated.")
             
