@@ -1,0 +1,4 @@
+.env
+random_trial_files/
+venv/
+db.sqlite3

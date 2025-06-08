@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Exam Paper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full space-y-6">
+        <h1 class="text-3xl font-bold text-center text-blue-700">📘 Generate a Custom Exam Paper</h1>
+
+        <form method="post" class="space-y-4" onsubmit="showSpinner()">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow">
+                🚀 Generate Paper
+            </button>
+        </form>
+
+        <!-- Spinner -->
+        <div id="spinner" class="hidden flex justify-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-400 border-t-transparent"></div>
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'ask_ai' %}" class="inline-block mt-4 text-sm text-blue-600 hover:underline">
+                💬 Chat Directly with AI
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function showSpinner() {
+            document.getElementById("spinner").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>

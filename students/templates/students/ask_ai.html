@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ask AI (Ugandan Physics)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
+
+    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-2xl p-8 space-y-6">
+        <div class="text-right">
+            <a href="{% url 'generate_paper' %}" class="text-blue-600 hover:underline text-sm">
+                📄 Generate a paper
+            </a>
+        </div>
+
+        <h1 class="text-3xl font-bold text-blue-700 text-center">💡 Ask AI (Ugandan Physics)</h1>
+
+        <form method="POST" onsubmit="showSpinner()" class="space-y-4">
+            {% csrf_token %}
+            <textarea 
+                name="prompt" 
+                rows="5" 
+                class="w-full p-4 text-base border border-gray-300 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                placeholder="Enter your question..."
+            ></textarea>
+            <button 
+                type="submit" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow">
+                🚀 Submit
+            </button>
+        </form>
+
+        <!-- Spinner -->
+        <div id="spinner" class="hidden flex justify-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-400 border-t-transparent"></div>
+        </div>
+
+        {% if ai_response %}
+        <div class="response bg-gray-50 border border-gray-300 p-4 rounded-xl space-y-2">
+            <h2 class="text-xl font-semibold text-gray-700">Response:</h2>
+            <p class="whitespace-pre-line text-gray-800">{{ ai_response }}</p>
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'ask_ai' %}" class="text-sm text-blue-600 hover:underline">
+                🔁 Ask another?
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function showSpinner() {
+            document.getElementById("spinner").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>

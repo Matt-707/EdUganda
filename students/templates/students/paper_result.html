@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generated Exam Paper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #007BFF, #00BFFF);
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .exam-header {
+            text-align: center;
+            font-weight: 600;
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #0056b3;
+        }
+
+        .instructions {
+            background: #e9f5ff;
+            padding: 15px 20px;
+            border-left: 5px solid #007BFF;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #007BFF;
+            text-transform: uppercase;
+            border-bottom: 2px solid #007BFF;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .question {
+            margin: 10px 0;
+            text-align: justify;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .actions {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .actions a,
+        .toggle-button {
+            display: inline-block;
+            margin: 10px 15px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .actions a:hover,
+        .toggle-button:hover {
+            background-color: #0056b3;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 30px 0;
+        }
+
+        #guide-section {
+            display: none;
+            transition: all 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="exam-header">
+            UGANDA NATIONAL EXAMINATIONS BOARD<br>
+            Advanced Level Physics<br>
+            Paper One<br>
+            Time: 2 hours
+        </div>
+
+        <div class="instructions">
+            <strong>Instructions:</strong> Answer all questions.
+        </div>
+
+        <hr>
+
+        {% if questions %}
+            <div class="section-title">Section A</div>
+            {% for line in questions %}
+                <div class="question">{{ line }}</div>
+            {% endfor %}
+        {% else %}
+            <p>No paper generated yet.</p>
+        {% endif %}
+
+        {% if guide %}
+            <div class="actions">
+                <button class="toggle-button" onclick="toggleGuide()">Show Answer Guide</button>
+            </div>
+
+            <div id="guide-section">
+                <div class="section-title">Answer Guide</div>
+                {% for line in guide %}
+                    <div class="question">{{ line }}</div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No answer guide generated yet.</p>
+        {% endif %}
+
+        <div class="actions">
+            <a href="{% url 'generate_paper' %}">Generate Another</a>
+            <a href="{% url 'ask_ai' %}">Chat with AI</a>
+        </div>
+    </div>
+
+    
+
+    
+    <script>
+        function toggleGuide() {
+            const section = document.getElementById("guide-section");
+            const button = document.querySelector(".toggle-button");
+
+            if (section.style.display === "none" || section.style.display === "") {
+                section.style.display = "block";
+                button.textContent = "Hide Answer Guide";
+            } else {
+                section.style.display = "none";
+                button.textContent = "Show Answer Guide";
+            }
+        }
+    </script>
+</body>
+</html>
