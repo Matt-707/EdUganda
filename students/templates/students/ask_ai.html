@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <title>Ask AI (Ugandan Physics)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+     <!-- MathJax CDN -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
 
@@ -39,7 +53,7 @@
         {% if ai_response %}
         <div class="response bg-gray-50 border border-gray-300 p-4 rounded-xl space-y-2">
             <h2 class="text-xl font-semibold text-gray-700">Response:</h2>
-            <p class="whitespace-pre-line text-gray-800">{{ ai_response }}</p>
+            <p class="whitespace-pre-line text-gray-800">{{ ai_response|safe }}</p>
         </div>
 
         <div class="text-center">

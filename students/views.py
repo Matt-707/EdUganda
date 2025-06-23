@@ -1,12 +1,14 @@
 from django.shortcuts import render
 import requests
 from .forms import PaperGenerationForm
+import re
 
 #adding security by keeping the API key to our open router account private
 import os
 from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("OPENROUTER_API_KEY")
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 
 #for the pdf generation uncomment when you get it to finally work
 '''from django.template.loader import render_to_string
@@ -17,38 +19,23 @@ import tempfile'''
 
 def ask_ai(request):
     ai_response = ""
-
     if request.method == "POST":
-        user_input = request.POST.get("prompt")
-
-        #offline ollama version
-        '''data = {
-            "model":"llama3",
-            "prompt":user_input,
-            "stream":False
-        }
-
-        #SEND TO OLLAMA and assign the result to the 'response vazriable'
-        ai_response = requests.post(
-            "http://localhost:11434/api/generate",
-            json=data)'''
-        
-        ai_response = openrouter(user_input)
-        
+        user_input = request.POST.get("prompt")     
+        ai_response = cleaning(openrouter(user_input))    
     return render(request, 
                   "students/ask_ai.html",
                   {"ai_response": ai_response})
 
 
-
 def openrouter(prompt):
+    # This function is for the openrouter API, which is a free alternative to the OpenAI API
     headers={
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
     data = {
-        "model": "deepseek/deepseek-chat-v3-0324:free",
+        "model": "deepseek/deepseek-chat:free",
         "messages": [
             {"role": "user", "content": prompt}
         ]
@@ -63,7 +50,46 @@ def openrouter(prompt):
         return result['choices'][0]['message']['content']
     except Exception as e:
         return f"Error: {str(e)}"
+    
 
+def ollama_version(prompt):
+    # This function is for the ollama API, which is a local version of the openrouter API
+    response = requests.post(
+                'http://localhost:11434/api/generate',
+                json={
+                    "model": "llama3",
+                    "prompt": prompt,
+                    "stream":False,
+                }
+            )
+    ollama_response = response.json() 
+    return ollama_response['response']
+
+
+def together_ai(prompt):
+    # This function is for the Together AI API, which is another alternative to the openrouter API
+    headers = {
+        "Authorization": f"Bearer {TOGETHER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 2048,
+        "temperature": 0.7,
+        "top_p": 0.95,
+    }
+    try:
+        response = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=data)
+        if response.status_code != 200:
+            return f"Error: {response.status_code} - {response.text}"
+        response.raise_for_status()
+        result = response.json()
+        return result['choices'][0]['message']['content']
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def generate_paper_view(request):
@@ -79,46 +105,40 @@ def generate_paper_view(request):
             topics_string = ', '.join(selected_topics)
 
             #then we make a good prompt for both the questions and the guide
-            prompt = (
+            question_prompt = (
                 f"Generate a full Uganda A-Level Physics exam paper based on the following topics: "
                 f"{topics_string}. The difficulty level should be {selected_difficulty}."
-                f" Format the questions clearly and structure it like a real UNEB exam paper, though, I don't want you to add fluff like instructions. Just give me mainly the questions."
-                f"Keep in mind that the UNEB format for physics in A-level has no multiple choice and only has essay questions"
+                f" Format the questions clearly and structure it like a real UNEB exam paper, though, I don't want you to add fluff like instructions. Just give me mainly the LABELLED questions."
+                f"Keep in mind that the UNEB format for physics in A-level has no multiple choice and only has essay questions. Create STRICTLY 3 questions per topic.\n"
                 f"Each question is comprised of parts a through e (sometimes stopping at a part d or extending to part f). the first parts are usually asking for a definition or statement of a law, then come explanation questions and a calculation part and finally the description of an experimental setup"
-                f"Finally, generate an accurate and detailed answer guide for the paper you have just generated for all the sections at once(dont ask me whether or not to generate the answer guide for each section individually). I want all the answers presented in the guide to be very well thought out and accurate. Be sure that the questions and the answer guide are separated by a clear heading/separator labelled 'Marking Guide' please be case sensitive with the heading Marking Guide."
-                f"I also want you to remove all sorts of fluff like the typical 'would you like...' and 'let me know if..' that usually come at the end of any AI generated response"
-            )
-            #marking_prompt = (f"Generate a marking guide for the A-Level Ugandan Physics paper you just generated.")
+                f"Make sure to label the questions EXPLICITLY as Question 1, Question 2, etc.\n"
+                f"Leave out any introduction or conclusion, just give me the questions and nothing else."
+    )
+            
+            ai_paper = openrouter(question_prompt)
             
 
-            # send the data to the ollama API
-            '''ollama_response = requests.post(
-                'http://localhost:11434/api/generate',
-                json={
-                    "model": "llama3",
-                    "prompt": prompt,
-                    "stream":False,
-                }
-            )'''
+            marking_prompt=(f"Here is an A-Level Physics UNEB-style exam paper:\n\n"
+                            f"{ai_paper}\n\n"
+                            f"Now generate a complete answer guide for this ENTIRE paper ALL AT ONCE.\n"
+                            f"- Provide accurate and complete answers to all parts.\n"
+                            f"Ensure that answers are correctly labelled with the corresponding question parts.\n"
+                            f"- Use LaTeX: \\(  \\) for inline, \\[  \\] for display of any equations and mathematical expressions.\n"
+                            f"- Avoid any fluff, headers, or endings like 'Hope this helps'.\n"
+                            f"- Just output the LABELLED answer content and end the answer guide with the word: END."
+                        
 
-            #using our openrouter function
-            ai_response = openrouter(prompt)
-            if "Marking Guide" in ai_response:
-                paper_part, guide_part = ai_response.split("Marking Guide", 1)
-            else:
-                paper_part = ai_response
-                guide_part = "No marking guide found."
-
-            formatted_paper_part = paper_part.strip().split('\n')
-            formatted_guide_part = guide_part.strip().split('\n')
-
-
-            #offline ollama version
-            '''response_data = ollama_response.json().get("response", "No Response Recieved")
-            paper_part, guide_part = response_data.split("Marking Guide", 1)
-            formatted_paper_part = paper_part.strip().split('\n')
-            formatted_guide_part = guide_part.strip().split('\n')'''
+                )
             
+            guide_text = openrouter(marking_prompt)
+
+            #formatting the prompts for the paper and the guide
+            formatted_paper_part = cleaning(ai_paper).split('\n')
+            formatted_guide_part = cleaning(guide_text).split('\n')
+
+            print("==== Cleaned Guide ====")
+            print(formatted_guide_part)
+            print("=======================")
 
             
             return render(request, 'students/paper_result.html',
@@ -129,6 +149,56 @@ def generate_paper_view(request):
     else:
         form = PaperGenerationForm()
     return render(request, 'students/generate_paper.html', {'form':form})
+
+
+def cleaning(content):
+    """
+    Cleans AI-generated exam content (questions or answers).
+    Returns a clean string with preserved line breaks, suitable for splitting later.
+    """
+    lines = content.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        # Remove markdown symbols
+        line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
+
+        # Remove AI fluff
+        if any(phrase in line.lower() for phrase in [
+            "let me know",
+            "hope this helps",
+            "i hope that was helpful",
+            "here's a",
+            "would you like",
+            "feel free",
+            "as an ai",
+            "in conclusion",
+            "thanks for using",
+        ]):
+            continue
+
+        # Remove lines like: ## Step 35: or ## Step 45: Question 9e
+        line = re.sub(r"^##?\s*Step\s*\d+[:\-]?\s*", "", line)
+        
+        # Remove wrapping quotes
+        line = line.strip('"\'')
+
+        # Fix escaped LaTeX syntax (\\( becomes \(, etc.)
+        line = line.replace('\\\\(', '\\(').replace('\\\\)', '\\)')
+        line = line.replace('\\\\[', '\\[').replace('\\\\]', '\\]')
+
+        # Convert raw dollar LaTeX to proper delimiters
+        line = line.replace('$$', '\\[').replace('$', '\\(')
+
+        if line:  # Skip blank lines
+            cleaned_lines.append(line)
+
+        
+
+    # Return as a single string with preserved line breaks
+    return '\n'.join(cleaned_lines).strip()
+
+
 
 #view function for the pdf generation
 '''def download_pdf_from_response(request):

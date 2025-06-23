@@ -3,7 +3,13 @@ from django import forms
 TOPIC_CHOICES =[
     ('mechanics', 'Mechanics'),
     ('optic','Optics'),
-    ('electricity', 'Electricity'),
+    ('direct current electricity', 'Direct Current Electricity'),
+    ('heat and thermodynamics', 'Heat and Thermodynamics'),
+    ('waves and oscillations', 'Waves and Oscillations'),
+    ('modern physics', 'Modern Physics'),
+    ('electromagnetism', 'Electromagnetism'),
+    ('electrostatics', 'Electrostatics'),
+
 ]
 
 DIFFICULTY_CHOICES = [
