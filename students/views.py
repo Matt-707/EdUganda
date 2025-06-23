@@ -2,6 +2,7 @@ from django.shortcuts import render
 import requests
 from .forms import PaperGenerationForm
 import re
+from groq import Groq
 
 #adding security by keeping the API key to our open router account private
 import os
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 #for the pdf generation uncomment when you get it to finally work
 '''from django.template.loader import render_to_string
@@ -21,7 +23,7 @@ def ask_ai(request):
     ai_response = ""
     if request.method == "POST":
         user_input = request.POST.get("prompt")     
-        ai_response = cleaning(openrouter(user_input))    
+        ai_response = cleaning(groq(user_input))    
     return render(request, 
                   "students/ask_ai.html",
                   {"ai_response": ai_response})
@@ -90,6 +92,25 @@ def together_ai(prompt):
         return result['choices'][0]['message']['content']
     except Exception as e:
         return f"Error: {str(e)}"
+    
+import requests
+import os
+
+def groq(prompt):
+    Client = Groq(api_key=GROQ_API_KEY)
+    response = Client.chat.completions.create(
+        model="gemma2-9b-it",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=2048,
+        temperature=0.7,
+        top_p=0.95,
+    )
+    print(response)
+    
+    return response.choices[0].message.content
+
 
 
 def generate_paper_view(request):
@@ -115,7 +136,7 @@ def generate_paper_view(request):
                 f"Leave out any introduction or conclusion, just give me the questions and nothing else."
     )
             
-            ai_paper = openrouter(question_prompt)
+            ai_paper = groq(question_prompt)
             
 
             marking_prompt=(f"Here is an A-Level Physics UNEB-style exam paper:\n\n"
@@ -130,7 +151,7 @@ def generate_paper_view(request):
 
                 )
             
-            guide_text = openrouter(marking_prompt)
+            guide_text = groq(marking_prompt)
 
             #formatting the prompts for the paper and the guide
             formatted_paper_part = cleaning(ai_paper).split('\n')
