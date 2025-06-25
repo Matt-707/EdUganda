@@ -2,15 +2,12 @@ from django.shortcuts import render
 import requests
 from .forms import PaperGenerationForm
 import re
-from groq import Groq
+from .api_clients import groq, openrouter, ollama_version, together_ai
 
-#adding security by keeping the API key to our open router account private
-import os
-from dotenv import load_dotenv
-load_dotenv()
-API_KEY = os.getenv("OPENROUTER_API_KEY")
-TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+from rag_index.rag_searcher import retrieve_context
+from rag_index.final_prompt import create_final_prompt
+
 
 #for the pdf generation uncomment when you get it to finally work
 '''from django.template.loader import render_to_string
@@ -22,95 +19,15 @@ import tempfile'''
 def ask_ai(request):
     ai_response = ""
     if request.method == "POST":
-        user_input = request.POST.get("prompt")     
-        ai_response = cleaning(groq(user_input))    
+        user_input = request.POST.get("prompt")
+
+        context = retrieve_context(user_input)  
+
+        final_prompt =  create_final_prompt(user_input, context)
+        ai_response = cleaning(openrouter(final_prompt))    
     return render(request, 
                   "students/ask_ai.html",
                   {"ai_response": ai_response})
-
-
-def openrouter(prompt):
-    # This function is for the openrouter API, which is a free alternative to the OpenAI API
-    headers={
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "deepseek/deepseek-chat:free",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
-    }
-
-    try:
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
-        if response.status_code != 200:
-            return f"Error: {response.status_code} - {response.text}"
-        response.raise_for_status()
-        result= response.json()
-        return result['choices'][0]['message']['content']
-    except Exception as e:
-        return f"Error: {str(e)}"
-    
-
-def ollama_version(prompt):
-    # This function is for the ollama API, which is a local version of the openrouter API
-    response = requests.post(
-                'http://localhost:11434/api/generate',
-                json={
-                    "model": "llama3",
-                    "prompt": prompt,
-                    "stream":False,
-                }
-            )
-    ollama_response = response.json() 
-    return ollama_response['response']
-
-
-def together_ai(prompt):
-    # This function is for the Together AI API, which is another alternative to the openrouter API
-    headers = {
-        "Authorization": f"Bearer {TOGETHER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
-        "max_tokens": 2048,
-        "temperature": 0.7,
-        "top_p": 0.95,
-    }
-    try:
-        response = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=data)
-        if response.status_code != 200:
-            return f"Error: {response.status_code} - {response.text}"
-        response.raise_for_status()
-        result = response.json()
-        return result['choices'][0]['message']['content']
-    except Exception as e:
-        return f"Error: {str(e)}"
-    
-import requests
-import os
-
-def groq(prompt):
-    Client = Groq(api_key=GROQ_API_KEY)
-    response = Client.chat.completions.create(
-        model="gemma2-9b-it",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=2048,
-        temperature=0.7,
-        top_p=0.95,
-    )
-    print(response)
-    
-    return response.choices[0].message.content
-
 
 
 def generate_paper_view(request):
@@ -136,7 +53,7 @@ def generate_paper_view(request):
                 f"Leave out any introduction or conclusion, just give me the questions and nothing else."
     )
             
-            ai_paper = groq(question_prompt)
+            ai_paper = ollama_version(question_prompt)
             
 
             marking_prompt=(f"Here is an A-Level Physics UNEB-style exam paper:\n\n"
@@ -151,7 +68,7 @@ def generate_paper_view(request):
 
                 )
             
-            guide_text = groq(marking_prompt)
+            guide_text = ollama_version(marking_prompt)
 
             #formatting the prompts for the paper and the guide
             formatted_paper_part = cleaning(ai_paper).split('\n')
@@ -183,6 +100,7 @@ def cleaning(content):
     for line in lines:
         # Remove markdown symbols
         line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
+        line = line.replace("##", "")
 
         # Remove AI fluff
         if any(phrase in line.lower() for phrase in [
