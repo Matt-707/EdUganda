@@ -11,7 +11,6 @@ IMAGE_OUTPUT_PATH = "students/static/page_screenshots"
 def extract_pdf_content(pdf_path):
     """
     Extracts text and images from a PDF file. 
-    
     """
 
     doc = fitz.open(pdf_path)
@@ -30,25 +29,6 @@ def extract_pdf_content(pdf_path):
             print(f"Extracted text from page {page_num}.")
         else:
             print(f"No text found on page {page_num}.")
-
-        # ----Image Extraction----
-        """image_list = page.get_images(full=True)
-
-        for img_index, img in enumerate(image_list):
-            xref = img[0]
-            base_image = doc.extract_image(xref)
-
-            image_bytes = base_image["image"]
-            image_ext = base_image["ext"]
-
-            #Construct the image filename
-            image_filename = f"page{page_num}_img{img_index +1}.{image_ext}"
-            image_path = os.path.join(IMAGE_OUTPUT_PATH, image_filename)
-
-            #Save the image to the specified path
-            with open(image_path, "wb") as img_file:
-                img_file.write(image_bytes)
-            print(f" ↳ Saved image: {image_filename} to {IMAGE_OUTPUT_PATH}")"""
 
     # ----Save the extracted text to a file----
     with open(TEXT_OUTPUT_PATH, "w", encoding = "utf-8") as txt_file:

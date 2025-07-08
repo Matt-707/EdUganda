@@ -11,7 +11,6 @@ def retrieve_context_and_pages(query, index_path="rag_index/faiss_index", k=4):
         query (str): The query string to search for.
         index_path (str): Path to the FAISS index.
         k (int): Number of top results to return.
-
         
     Returns:
         string: Of matching syllabus content.
