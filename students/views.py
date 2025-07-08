@@ -5,7 +5,7 @@ import re
 from .api_clients import groq, openrouter, ollama_version, together_ai
 
 
-from rag_index.rag_searcher import retrieve_context
+from rag_index.rag_searcher import retrieve_context_and_pages
 from rag_index.final_prompt import create_final_prompt
 
 
@@ -18,16 +18,35 @@ import tempfile'''
 
 def ask_ai(request):
     ai_response = ""
+    images = []
+    user_input = ""
     if request.method == "POST":
         user_input = request.POST.get("prompt")
 
-        context = retrieve_context(user_input)  
+        context, pages = retrieve_context_and_pages(user_input)  
+
+        
+        
+
+        print("==== Retrieved Context ====")
+        print(context)
+        print("\ncontext source")
+        print(pages)
 
         final_prompt =  create_final_prompt(user_input, context)
-        ai_response = cleaning(openrouter(final_prompt))    
+        ai_response = cleaning(openrouter(final_prompt)) 
+
+        if "I do not have enough information" not in ai_response:
+            images = [f"page_screenshots/page_{page}.png" for page in pages]
+
+
+
     return render(request, 
                   "students/ask_ai.html",
-                  {"ai_response": ai_response})
+                  {"ai_response": ai_response,
+                   "images": images,
+                   "user_input": user_input,
+                   })
 
 
 def generate_paper_view(request):
@@ -53,7 +72,7 @@ def generate_paper_view(request):
                 f"Leave out any introduction or conclusion, just give me the questions and nothing else."
     )
             
-            ai_paper = ollama_version(question_prompt)
+            ai_paper = openrouter(question_prompt)
             
 
             marking_prompt=(f"Here is an A-Level Physics UNEB-style exam paper:\n\n"
@@ -68,7 +87,7 @@ def generate_paper_view(request):
 
                 )
             
-            guide_text = ollama_version(marking_prompt)
+            guide_text = openrouter(marking_prompt)
 
             #formatting the prompts for the paper and the guide
             formatted_paper_part = cleaning(ai_paper).split('\n')
@@ -101,7 +120,7 @@ def cleaning(content):
         # Remove markdown symbols
         line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
         line = line.replace("##", "")
-
+        line = line.replace("#", "")
         # Remove AI fluff
         if any(phrase in line.lower() for phrase in [
             "let me know",

@@ -110,3 +110,5 @@ def groq(prompt):
     print(response)
     
     return response.choices[0].message.content
+
+

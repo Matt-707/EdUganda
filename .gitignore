@@ -3,3 +3,5 @@ random_trial_files/
 venv/
 db.sqlite3
 rag_index/faiss_index/
+rag_index/page_screenshots/
+students/static/

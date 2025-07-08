@@ -1,73 +1,260 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Ask AI (Ugandan Physics)</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-     <!-- MathJax CDN -->
-<script>
-window.MathJax = {
-  tex: {
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$'], ['\\[', '\\]']],
-  },
-  svg: {
-    fontCache: 'global'
-  }
-};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
+    <!-- MathJax for LaTeX rendering -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+        },
+        svg: { fontCache: "global" },
+      };
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+      async
+    ></script>
 
-    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-2xl p-8 space-y-6">
+    <style>
+      .chat-container {
+        max-width: 960px;
+        margin: auto;
+      }
+
+      .notes-img-thumb {
+        transition: transform 0.3s ease;
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+      }
+
+      .notes-img-thumb:hover {
+        transform: scale(1.05);
+      }
+
+      .toggle-btn {
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .toggle-btn:hover {
+        text-decoration: underline;
+        color: #1e40af;
+      }
+
+      @media (min-width: 1024px) {
+        .chat-content {
+          display: flex;
+          gap: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-blue-50 min-h-screen p-4 flex flex-col">
+    <div class="chat-container space-y-6">
+      <!-- Title -->
+      <h1 class="text-3xl font-extrabold text-blue-800 text-center mb-4">
+        💡 Ask AI (Ugandan Physics)
+      </h1>
+
+      {% if ai_response %}
+      <div class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+        <!-- User Input -->
         <div class="text-right">
-            <a href="{% url 'generate_paper' %}" class="text-blue-600 hover:underline text-sm">
-                📄 Generate a paper
-            </a>
+          <div
+            class="inline-block bg-blue-100 text-blue-900 px-4 py-2 rounded-lg shadow-sm"
+          >
+            {{ user_input }}
+          </div>
         </div>
 
-        <h1 class="text-3xl font-bold text-blue-700 text-center">💡 Ask AI (Ugandan Physics)</h1>
+        <!-- Chat + Notes -->
+        <div class="chat-content">
+          <!-- AI Response -->
+          <div class="flex-1 bg-gray-50 border border-gray-300 rounded-xl p-4">
+            <h2 class="text-lg font-semibold text-blue-700 mb-2">
+              AI Response
+            </h2>
+            <p class="whitespace-pre-line text-gray-800">
+              {{ ai_response|safe }}
+            </p>
+          </div>
 
-        <form method="POST" onsubmit="showSpinner()" class="space-y-4">
-            {% csrf_token %}
-            <textarea 
-                name="prompt" 
-                rows="5" 
-                class="w-full p-4 text-base border border-gray-300 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                placeholder="Enter your question..."
-            ></textarea>
-            <button 
-                type="submit" 
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow">
-                🚀 Submit
+          <!-- Relevant Notes -->
+          {% if images %}
+          <div
+            id="notesContainer"
+            class="w-full lg:w-1/2 bg-white border border-gray-200 rounded-xl p-4 space-y-3"
+          >
+            <div class="flex justify-between items-center mb-2">
+              <h2 class="text-lg font-semibold text-blue-700">
+                📚 Relevant Notes
+              </h2>
+              <span
+                class="toggle-btn text-sm text-blue-600"
+                onclick="toggleNotes()"
+                >Hide</span
+              >
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              {% for img in images %}
+              <img
+                src="{% static img %}"
+                alt="Relevant Page"
+                class="notes-img-thumb w-full rounded shadow cursor-pointer"
+                onclick="openLightbox({{ forloop.counter0 }})"
+                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x600?text=Unavailable';"
+              />
+              {% endfor %}
+            </div>
+          </div>
+          <div id="showNotesBtn" class="hidden text-right mt-4">
+            <button
+              class="toggle-btn text-sm text-blue-600"
+              onclick="toggleNotes()"
+            >
+              📖 Show Notes
             </button>
-        </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Ask Another Box (ALWAYS full-width) -->
+      <form
+        method="POST"
+        onsubmit="showSpinner()"
+        class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow"
+      >
+        {% csrf_token %}
+        <textarea
+          name="prompt"
+          rows="5"
+          class="w-full p-4 border border-gray-300 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Question?..."
+        ></textarea>
+
+        <button
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow"
+        >
+          ➤ Submit
+        </button>
+
+        <!-- Generate Paper Link -->
+        <div class="text-center mt-2">
+          <a
+            href="{% url 'generate_paper' %}"
+            class="text-sm text-blue-600 hover:underline"
+          >
+            📄 Generate a Paper
+          </a>
+        </div>
 
         <!-- Spinner -->
-        <div id="spinner" class="hidden flex justify-center">
-            <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-400 border-t-transparent"></div>
+        <div id="spinner" class="hidden flex justify-center mt-4">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-4 border-blue-400 border-t-transparent"
+          ></div>
         </div>
-
-        {% if ai_response %}
-        <div class="response bg-gray-50 border border-gray-300 p-4 rounded-xl space-y-2">
-            <h2 class="text-xl font-semibold text-gray-700">Response:</h2>
-            <p class="whitespace-pre-line text-gray-800">{{ ai_response|safe }}</p>
-        </div>
-
-        <div class="text-center">
-            <a href="{% url 'ask_ai' %}" class="text-sm text-blue-600 hover:underline">
-                🔁 Ask another?
-            </a>
-        </div>
-        {% endif %}
+      </form>
     </div>
 
+    <!-- Lightbox Modal -->
+    <div
+      id="lightbox"
+      class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden"
+    >
+      <button
+        onclick="closeLightbox()"
+        class="absolute top-4 right-4 text-white text-3xl font-bold"
+      >
+        ×
+      </button>
+      <button
+        onclick="navigateLightbox(-1)"
+        class="absolute left-4 text-white text-4xl px-3"
+      >
+        ‹
+      </button>
+      <img
+        id="lightbox-img"
+        src=""
+        alt="Zoomed Image"
+        class="max-w-[90%] max-h-[90%] rounded-xl border-4 border-white shadow-xl"
+      />
+      <button
+        onclick="navigateLightbox(1)"
+        class="absolute right-4 text-white text-4xl px-3"
+      >
+        ›
+      </button>
+    </div>
+
+    <!-- Scripts -->
     <script>
-        function showSpinner() {
-            document.getElementById("spinner").classList.remove("hidden");
+      function showSpinner() {
+        document.getElementById("spinner").classList.remove("hidden");
+      }
+
+      let imageSources = [];
+      let currentIndex = 0;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        imageSources = Array.from(
+          document.querySelectorAll('img[onclick^="openLightbox"]')
+        ).map((img) => img.src);
+      });
+
+      function openLightbox(index) {
+        currentIndex = index;
+        document.getElementById("lightbox-img").src = imageSources[index];
+        document.getElementById("lightbox").classList.remove("hidden");
+      }
+
+      function closeLightbox() {
+        document.getElementById("lightbox").classList.add("hidden");
+      }
+
+      function navigateLightbox(direction) {
+        currentIndex =
+          (currentIndex + direction + imageSources.length) %
+          imageSources.length;
+        document.getElementById("lightbox-img").src =
+          imageSources[currentIndex];
+      }
+
+      document.addEventListener("keydown", (e) => {
+        const lb = document.getElementById("lightbox");
+        if (lb.classList.contains("hidden")) return;
+        if (e.key === "ArrowRight") navigateLightbox(1);
+        if (e.key === "ArrowLeft") navigateLightbox(-1);
+        if (e.key === "Escape") closeLightbox();
+      });
+
+      function toggleNotes() {
+        const notesBox = document.getElementById("notesContainer");
+        const showBtn = document.getElementById("showNotesBtn");
+        if (notesBox.classList.contains("hidden")) {
+          notesBox.classList.remove("hidden");
+          showBtn.classList.add("hidden");
+        } else {
+          notesBox.classList.add("hidden");
+          showBtn.classList.remove("hidden");
         }
+      }
     </script>
-</body>
+  </body>
 </html>
