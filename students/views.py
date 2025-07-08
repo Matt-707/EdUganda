@@ -4,9 +4,8 @@ from .forms import PaperGenerationForm
 import re
 from .api_clients import groq, openrouter, ollama_version, together_ai
 
-
 from rag_index.rag_searcher import retrieve_context_and_pages
-from rag_index.final_prompt import create_final_prompt
+from students.prompting.chat_prompt import create_chat_prompt
 
 
 #for the pdf generation uncomment when you get it to finally work
@@ -25,21 +24,16 @@ def ask_ai(request):
 
         context, pages = retrieve_context_and_pages(user_input)  
 
-        
-        
-
         print("==== Retrieved Context ====")
         print(context)
         print("\ncontext source")
         print(pages)
 
-        final_prompt =  create_final_prompt(user_input, context)
+        final_prompt =  create_chat_prompt(user_input, context)
         ai_response = cleaning(openrouter(final_prompt)) 
 
         if "I do not have enough information" not in ai_response:
             images = [f"page_screenshots/page_{page}.png" for page in pages]
-
-
 
     return render(request, 
                   "students/ask_ai.html",
@@ -151,10 +145,11 @@ def cleaning(content):
         if line:  # Skip blank lines
             cleaned_lines.append(line)
 
-        
-
     # Return as a single string with preserved line breaks
-    return '\n'.join(cleaned_lines).strip()
+        cleaned_text = '\n'.join(cleaned_lines).strip()
+        
+    
+    return cleaned_text
 
 
 
