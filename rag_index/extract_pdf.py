@@ -10,7 +10,6 @@ def extract_pdf_content(pdf_path):
     """
     Extracts text and images from a PDF file. 
     """
-
     doc = fitz.open(pdf_path)
     print(f"Opened PDF: {pdf_path} with {len(doc)} pages.")
 
@@ -43,6 +42,8 @@ def extract_text_and_render_images(
         zoom =2,
 ):
     os.makedirs(image_output_path, exist_ok=True)
+    os.makedirs(os.path.dirname(text_output_path), exist_ok=True)
+    os.makedirs(os.path.dirname(page_text_map_path), exist_ok=True)
 
     """
     Extracts text using a new method
