@@ -3,7 +3,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import json
 
 
-def retrieve_context_and_pages(query, index_path="rag_index/faiss_index", k=4):
+def retrieve_context_and_pages(query, index_path, k=4):
     """
     Retrieve context from a FAISS index based on a query.
 

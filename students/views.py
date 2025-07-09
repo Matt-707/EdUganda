@@ -21,7 +21,7 @@ def ask_ai(request):
     if request.method == "POST":
         user_input = request.POST.get("prompt")
 
-        context, pages = retrieve_context_and_pages(user_input)  
+        context, pages = retrieve_context_and_pages(user_input, index_path="sources/physics2/faiss_index")  
 
         print("==== Retrieved Context ====")
         print(context)
@@ -32,7 +32,7 @@ def ask_ai(request):
         ai_response = cleaning(openrouter(final_prompt)) 
 
         if "I do not have enough information" not in ai_response:
-            images = [f"page_screenshots/page_{page}.png" for page in pages]
+            images = [f"p2_notes_screenshots/page_{page}.png" for page in pages]
 
     return render(request, 
                   "students/ask_ai.html",
@@ -40,6 +40,7 @@ def ask_ai(request):
                    "images": images,
                    "user_input": user_input,
                    })
+
 
 def generate_paper_view(request):
     response_data = None
