@@ -19,7 +19,6 @@ def ask_ai(request):
     images = []
     user_input = ""
     indexes_to_images = {
-        "sources/nelkon_source/faiss_index":"nelkon_screenshots",
         "sources/physics1/wogibi/faiss_index":"p1_wogibi_screenshots",
         "sources/physics2/faiss_index":"p2_notes_screenshots",
     }
@@ -37,8 +36,6 @@ def ask_ai(request):
         pages = result["pages"]
         similarity = result["similarity_score"]
 
-        
-
         print("🔍 Selected Index:", best_index)
         print("🔢 Similarity Score:", similarity)
         print("📄 Pages:", pages)
@@ -48,16 +45,9 @@ def ask_ai(request):
             print(img_dir)
         except Exception as e:
             print(f"error loading img directory {e}")
-        #context, pages = retrieve_context_and_pages(user_input, index_path="sources/physics2/faiss_index")  
-
-        '''print("==== Retrieved Context ====")
-        print(context)
-        print("\ncontext source")
-        print(pages)'''
-
 
         final_prompt =  create_chat_prompt(user_input, context)
-        print(final_prompt)
+
         raw_ai_response, time_elapsed = openrouter(final_prompt)
 
         ai_response = cleaning(raw_ai_response)
@@ -105,7 +95,6 @@ def generate_paper_view(request):
             print("=======================")
             print("=====TIME ELAPSED=====")
             print(total_time)
-
             
             return render(request, 'students/paper_result.html',
                           {"questions": formatted_paper_part,
