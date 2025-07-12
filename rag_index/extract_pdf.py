@@ -3,8 +3,8 @@ import fitz
 import json
 
 #Create folders to save the output
-TEXT_OUTPUT_PATH = "rag_index/nelkon_source/nelkon.txt" 
-IMAGE_OUTPUT_PATH = "students/static/nelkon_screenshots"
+TEXT_OUTPUT_PATH = "sources/physics2/phys2.txt" 
+IMAGE_OUTPUT_PATH = "students/static/p2_notes_screenshots"
 
 def extract_pdf_content(pdf_path):
     """
@@ -35,10 +35,10 @@ def extract_pdf_content(pdf_path):
 
 
 def extract_text_and_render_images(
-        pdf_path="rag_index/Nelkon7.pdf",
+        pdf_path="pdfs/p2.pdf",
         text_output_path=TEXT_OUTPUT_PATH,
         image_output_path=IMAGE_OUTPUT_PATH,
-        page_text_map_path = "rag_index/nelkon_source/nelkon_map.json",
+        page_text_map_path = "sources/physics2/phys2_map.json",
         zoom =2,
 ):
     os.makedirs(image_output_path, exist_ok=True)

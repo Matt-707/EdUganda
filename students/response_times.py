@@ -25,6 +25,4 @@ def response_times(
     print(f"Together AI|{together_model}: ", together_ai_time, "seconds")
     print(f"Groq|{groq_model}: ", groq_time, "seconds")
 
-    
-
    

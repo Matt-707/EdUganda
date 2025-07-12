@@ -4,7 +4,6 @@ from .forms import PaperGenerationForm
 import re
 from groq import Groq
 
-
 #adding security by keeping the API key to our open router account private
 import os
 from dotenv import load_dotenv
