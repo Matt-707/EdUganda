@@ -15,7 +15,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # importing time to test the response times
 import time
 
-def openrouter(prompt, model="deepseek/deepseek-chat:free"):
+def openrouter(prompt, model="deepseek/deepseek-chat-v3.1:free"):
     # This function is for the openrouter API, which is a free alternative to the OpenAI API
     headers={
         "Authorization": f"Bearer {API_KEY}",
@@ -42,9 +42,9 @@ def openrouter(prompt, model="deepseek/deepseek-chat:free"):
             return f"Error: {response.status_code} - {response.text}"
         response.raise_for_status()
         result= response.json()
-        return result['choices'][0]['message']['content'], duration
+        return result['choices'][0]['message']['content']
     except Exception as e:
-        return f"Error: {str(e)}", duration
+        return f"Error: {str(e)}"
     
 
 def ollama_version(prompt, model="mistral"):
@@ -115,7 +115,7 @@ def together_ai(prompt, model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
 import requests
 import os
 
-def groq(prompt, model="gemma2-9b-it"):
+def groq(prompt, model="openai/gpt-oss-120b"):
     Client = Groq(api_key=GROQ_API_KEY)
 
     start_time = time.time()  # Start timing the request

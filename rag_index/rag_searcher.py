@@ -45,6 +45,7 @@ def select_best_index(query, base_dir="sources", k=4):
             for r, s in results:
                 print(f" {s:.3f} => {r.page_content[:60]}...")
 
+#we might change this
             if min_score > 1.2:
                 continue
 
@@ -63,3 +64,4 @@ def select_best_index(query, base_dir="sources", k=4):
         "similarity_score": best_score,
         "pages": sorted(set(best_pages))
     }
+

@@ -40,6 +40,7 @@ def cleaning(content):
         # Convert raw dollar LaTeX to proper delimiters
         line = line.replace('$$', '\\[').replace('$', '\\(')
 
+
         if line:  # Skip blank lines
             cleaned_lines.append(line)
 

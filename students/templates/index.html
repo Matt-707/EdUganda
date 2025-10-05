@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EDUGANDA — Static UI Prototype</title>
+
+  <!-- MathJax for LaTeX rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <!-- jsPDF + html2canvas for client-side PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="nav">
+    <div style="display:flex;gap:16px;align-items:center">
+      <div class="brand">EDUGANDA</div>
+      <div class="muted">Physics — Optics (UI Prototype)</div>
+    </div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">Quiz</a>
+      <a href="#">Generate Exam</a>
+      <a href="#">About</a>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="topics">
+      <div class="side-title">Topics & Level</div>
+      <div class="controls-row">
+        <select id="level" class="level-select" onchange="onLevelChange()">
+          <option value="primary">Primary</option>
+          <option value="olevel" selected>O Level</option>
+          <option value="alevel">A Level</option>
+        </select>
+      </div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:8px">
+        Pick a level to filter subtopics. Only Geometric Optics is supported in this prototype.
+      </div>
+      <div class="topic" data-topic="geometric-optics">
+        <div class="top" onclick="toggleTopic(this)">
+          <h4>Geometric Optics</h4>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="secondary" onclick="event.stopPropagation(); selectAll('geometric-optics', true)">All</button>
+            <button class="secondary" style="margin-left:6px" onclick="event.stopPropagation(); selectAll('geometric-optics', false)">None</button>
+            <svg class="chev open" width="14" height="14" viewBox="0 0 24 24"><path fill="#6b7280" d="M9 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+        <div class="sublist show" id="geometric-optics-list">
+          <div class="subitem" data-level="primary olevel alevel">
+            <input type="checkbox" name="subtopic" value="reflection" id="ref"> <label for="ref">Reflection</label>
+          </div>
+          <div class="subitem" data-level="olevel alevel">
+            <input type="checkbox" name="subtopic" value="refraction" id="refr"> <label for="refr">Refraction</label>
+          </div>
+          <div class="subitem" data-level="olevel alevel">
+            <input type="checkbox" name="subtopic" value="snell" id="snell"> <label for="snell">Snell's Law</label>
+          </div>
+          <div class="subitem" data-level="alevel">
+            <input type="checkbox" name="subtopic" value="aberration" id="aberr"> <label for="aberr">Aberrations & Ray Tracing</label>
+          </div>
+          <div class="subitem" data-level="primary olevel">
+            <input type="checkbox" name="subtopic" value="lenses" id="lenses"> <label for="lenses">Thin Lenses</label>
+          </div>
+          <div class="subitem" data-level="olevel alevel">
+            <input type="checkbox" name="subtopic" value="mirrors" id="mirrors"> <label for="mirrors">Spherical Mirrors</label>
+          </div>
+          <div class="subitem" data-level="alevel">
+            <input type="checkbox" name="subtopic" value="tir" id="tir"> <label for="tir">Total Internal Reflection & Fiber Optics</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other topics placeholders -->
+      <div class="topic" data-topic="waves">
+        <div class="top" onclick="toggleTopic(this)">
+          <h4>Waves</h4>
+          <div><svg class="chev" width="14" height="14" viewBox="0 0 24 24"><path fill="#6b7280" d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="sublist" id="waves-list"><div class="subitem muted">Support coming soon</div></div>
+      </div>
+      <div class="topic" data-topic="electricity">
+        <div class="top" onclick="toggleTopic(this)">
+          <h4>Electricity</h4>
+          <div><svg class="chev" width="14" height="14" viewBox="0 0 24 24"><path fill="#6b7280" d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="sublist" id="electricity-list"><div class="subitem muted">Support coming soon</div></div>
+      </div>
+      <div class="topic" data-topic="magnetism">
+        <div class="top" onclick="toggleTopic(this)">
+          <h4>Magnetism</h4>
+          <div><svg class="chev" width="14" height="14" viewBox="0 0 24 24"><path fill="#6b7280" d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="sublist" id="magnetism-list"><div class="subitem muted">Support coming soon</div></div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h2 style="margin:0">Generate Quiz</h2>
+          <div class="muted">Select subtopics and options, then click Generate (client-side simulate)</div>
+        </div>
+        <div>
+          <button onclick="simulate()">Simulate</button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls" style="margin-top:12px">
+        <div>
+          <label>Quiz Type</label><br>
+          <select id="quizType">
+            <option value="non-objective" selected>Non-Objective (Current)</option>
+            <option value="objective">Objective (MCQ)</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Difficulty</label><br>
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Number of questions</label><br>
+          <input type="number" id="num_q" value="5" min="1" max="50" />
+        </div>
+
+        <div>
+          <label>&nbsp;</label><br>
+          <button id="generateBtn" onclick="generateQuiz()">Generate</button>
+        </div>
+
+        <div>
+          <label>&nbsp;</label><br>
+          <button class="secondary" onclick="downloadPDF()">Download PDF</button>
+        </div>
+
+        <div style="display:flex;align-items:center; gap:12px;">
+          <input type="checkbox" id="enableTimer" checked> <label for="enableTimer">Enable Timer</label>
+          <span id="timer-display"></span>
+        </div>
+
+        <div>
+          <button id="startQuizBtn" onclick="startQuiz()" style="display:none;">Start Quiz</button>
+        </div>
+
+        <div style="margin-left:auto" class="muted" id="note-area">
+          Static prototype — no backend connected
+        </div>
+      </div>
+
+      <div class="muted" id="selected-info">Selected: <span id="selList">none</span></div>
+      <div id="quiz-area" aria-live="polite">
+        <div class="muted">No quiz generated yet. Use Generate or Simulate to populate sample LaTeX questions.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- External JS -->
+  <script src="script.js"></script>
+</body>
+</html>

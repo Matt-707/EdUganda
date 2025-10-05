@@ -48,7 +48,7 @@ def ask_ai(request):
 
         final_prompt =  create_chat_prompt(user_input, context)
 
-        raw_ai_response, time_elapsed = openrouter(final_prompt)
+        raw_ai_response = openrouter(final_prompt)
 
         ai_response = cleaning(raw_ai_response)
 
@@ -77,14 +77,14 @@ def generate_paper_view(request):
 
             #then we make a good prompt for both the questions and the guide
             question_prompt = paper_generation_prompt(topics_string, selected_difficulty)
-            
-            ai_paper, generation_time = openrouter(question_prompt)
+
+            ai_paper = openrouter(question_prompt, model="x-ai/grok-4-fast:free")
 
             marking_prompt= guide_generation_prompt(ai_paper)
-            
-            guide_text, answer_guide_time  = openrouter(marking_prompt)
 
-            total_time = generation_time+answer_guide_time
+            guide_text = openrouter(marking_prompt, model="x-ai/grok-4-fast:free")
+
+            #total_time = generation_time+answer_guide_time
 
             #formatting the prompts for the paper and the guide
             formatted_paper_part = cleaning(ai_paper).split('\n')
@@ -94,7 +94,7 @@ def generate_paper_view(request):
             print(formatted_guide_part)
             print("=======================")
             print("=====TIME ELAPSED=====")
-            print(total_time)
+            #print(total_time)
             
             return render(request, 'students/paper_result.html',
                           {"questions": formatted_paper_part,
