@@ -1,9 +1,10 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Ask AI (Ugandan Physics)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ask EdUganda AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- MathJax for LaTeX rendering -->
@@ -28,103 +29,143 @@
     ></script>
 
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
       .chat-container {
         max-width: 960px;
         margin: auto;
       }
 
+      /* Animations */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-up {
+        animation: fadeUp 0.4s ease-out forwards;
+      }
+
+      /* Note Thumbnails */
       .notes-img-thumb {
-        transition: transform 0.3s ease;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
         aspect-ratio: 3 / 4;
         object-fit: cover;
       }
-
       .notes-img-thumb:hover {
-        transform: scale(1.05);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
 
-      .toggle-btn {
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .toggle-btn:hover {
-        text-decoration: underline;
-        color: #1e40af;
-      }
-
-      @media (min-width: 1024px) {
-        .chat-content {
-          display: flex;
-          gap: 1rem;
-        }
+      /* Lightbox glassmorphism */
+      #lightbox {
+        backdrop-filter: blur(8px);
       }
     </style>
   </head>
-  <body class="bg-blue-50 min-h-screen p-4 flex flex-col">
-    <div class="chat-container space-y-6">
-      <!-- Title -->
-      <h1 class="text-3xl font-extrabold text-blue-800 text-center mb-4">
-        💡 Ask EdUganda AI
-      </h1>
+  <body class="bg-slate-50 text-slate-900 min-h-screen p-6 flex flex-col">
+    <div class="chat-container w-full space-y-8">
+      <!-- Header -->
+      <header class="text-center py-6 animate-fade-up">
+        <h1 class="text-4xl font-bold text-emerald-900 tracking-tight">
+          EdUganda AI
+        </h1>
+        <p
+          class="text-sm text-slate-500 mt-2 uppercase tracking-widest font-semibold"
+        >
+          Physics Assistant
+        </p>
+      </header>
 
       {% if ai_response %}
-      <div class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+      <div
+        class="bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-8 space-y-8 border border-slate-100 animate-fade-up"
+        style="animation-delay: 0.1s"
+      >
         <!-- User Input -->
-        <div class="text-right">
+        <div class="flex justify-end">
           <div
-            class="inline-block bg-blue-100 text-blue-900 px-4 py-2 rounded-lg shadow-sm"
+            class="inline-block bg-slate-900 text-white px-6 py-3 rounded-2xl rounded-tr-sm shadow-sm text-sm font-medium max-w-[80%]"
           >
             {{ user_input }}
           </div>
         </div>
 
-        <!-- Chat + Notes -->
-        <div class="chat-content">
+        <!-- Chat + Notes Grid -->
+        <div class="flex flex-col lg:flex-row gap-6">
           <!-- AI Response -->
-          <div class="flex-1 bg-gray-50 border border-gray-300 rounded-xl p-4">
-            <h2 class="text-lg font-semibold text-blue-700 mb-2">
-              AI Response
-            </h2>
-            <p class="whitespace-pre-line text-gray-800">
+          <div
+            class="flex-1 bg-emerald-50/50 border border-emerald-100/50 rounded-2xl p-6"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div class="h-2 w-2 rounded-full bg-emerald-600"></div>
+              <h2
+                class="text-sm font-bold text-emerald-900 uppercase tracking-wide"
+              >
+                Response
+              </h2>
+            </div>
+            <div class="whitespace-pre-line text-slate-700 leading-relaxed">
               {{ ai_response|safe }}
-            </p>
+            </div>
           </div>
 
           <!-- Relevant Notes -->
           {% if images %}
           <div
             id="notesContainer"
-            class="w-full lg:w-1/2 bg-white border border-gray-200 rounded-xl p-4 space-y-3"
+            class="w-full lg:w-5/12 bg-white border border-slate-200 rounded-2xl p-6 transition-all duration-300"
           >
-            <div class="flex justify-between items-center mb-2">
-              <h2 class="text-lg font-semibold text-blue-700">
-                📚 Relevant Notes
-              </h2>
-              <span
-                class="toggle-btn text-sm text-blue-600"
-                onclick="toggleNotes()"
-                >Hide</span
+            <div class="flex justify-between items-center mb-4">
+              <h2
+                class="text-sm font-bold text-slate-900 uppercase tracking-wide"
               >
+                Source Materials
+              </h2>
+              <button
+                onclick="toggleNotes()"
+                class="text-xs font-semibold text-slate-400 hover:text-emerald-700 transition-colors uppercase tracking-wider"
+              >
+                Hide
+              </button>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-4">
               {% for img in images %}
               <img
                 src="{% static img %}"
-                alt="Relevant Page"
-                class="notes-img-thumb w-full rounded shadow cursor-pointer"
+                alt="Reference Document"
+                class="notes-img-thumb w-full rounded-lg border border-slate-100 cursor-pointer"
                 onclick="openLightbox({{ forloop.counter0 }})"
-                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x600?text=Unavailable';"
+                onerror="
+                  this.onerror = null;
+                  this.src =
+                    'https://via.placeholder.com/400x600?text=Unavailable';
+                "
               />
               {% endfor %}
             </div>
           </div>
-          <div id="showNotesBtn" class="hidden text-right mt-4">
+
+          <div
+            id="showNotesBtn"
+            class="hidden text-right mt-4 w-full lg:w-auto"
+          >
             <button
-              class="toggle-btn text-sm text-blue-600"
+              class="text-sm font-semibold text-emerald-700 hover:text-emerald-900 transition-colors bg-emerald-50 px-4 py-2 rounded-lg"
               onclick="toggleNotes()"
             >
-              📖 Show Notes
+              View Source Materials
             </button>
           </div>
           {% endif %}
@@ -132,41 +173,45 @@
       </div>
       {% endif %}
 
-      <!-- Ask Another Box (ALWAYS full-width) -->
+      <!-- Input Form -->
       <form
         method="POST"
         onsubmit="showSpinner()"
-        class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow"
+        class="bg-white border border-slate-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-fade-up relative overflow-hidden"
+        style="animation-delay: 0.2s"
       >
         {% csrf_token %}
-        <textarea
-          name="prompt"
-          rows="5"
-          class="w-full p-4 border border-gray-300 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="Question?..."
-        ></textarea>
+        <div class="relative">
+          <textarea
+            name="prompt"
+            rows="4"
+            class="w-full p-5 bg-slate-50 border border-slate-200 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 transition-all text-slate-800 placeholder-slate-400"
+            placeholder="Ask a physics question..."
+          ></textarea>
 
-        <button
-          type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl shadow"
-        >
-          ➤ Submit
-        </button>
-
-        <!-- Generate Paper Link -->
-        <div class="text-center mt-2">
-          <a
-            href="{% url 'generate_paper' %}"
-            class="text-sm text-blue-600 hover:underline"
-          >
-            📄 Generate a Paper
-          </a>
+          <div class="absolute bottom-4 right-4 flex items-center gap-4">
+            <a
+              href="{% url 'generate_paper' %}"
+              class="text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors uppercase tracking-wider"
+            >
+              Generate Paper
+            </a>
+            <button
+              type="submit"
+              class="bg-emerald-900 hover:bg-emerald-800 text-amber-400 font-semibold py-2 px-6 rounded-lg shadow-md transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              Submit Request
+            </button>
+          </div>
         </div>
 
-        <!-- Spinner -->
-        <div id="spinner" class="hidden flex justify-center mt-4">
+        <!-- Elegant Spinner -->
+        <div
+          id="spinner"
+          class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10"
+        >
           <div
-            class="animate-spin rounded-full h-8 w-8 border-4 border-blue-400 border-t-transparent"
+            class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-emerald-800"
           ></div>
         </div>
       </form>
@@ -175,31 +220,32 @@
     <!-- Lightbox Modal -->
     <div
       id="lightbox"
-      class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden"
+      class="fixed inset-0 bg-slate-900/90 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300"
+      style="transition: opacity 0.3s ease"
     >
       <button
         onclick="closeLightbox()"
-        class="absolute top-4 right-4 text-white text-3xl font-bold"
+        class="absolute top-6 right-8 text-slate-400 hover:text-white text-4xl font-light transition-colors"
       >
-        ×
+        &times;
       </button>
       <button
         onclick="navigateLightbox(-1)"
-        class="absolute left-4 text-white text-4xl px-3"
+        class="absolute left-8 text-slate-400 hover:text-white text-6xl font-light transition-colors px-4"
       >
-        ‹
+        &lsaquo;
       </button>
       <img
         id="lightbox-img"
         src=""
-        alt="Zoomed Image"
-        class="max-w-[90%] max-h-[90%] rounded-xl border-4 border-white shadow-xl"
+        alt="Expanded view"
+        class="max-w-[85%] max-h-[85vh] rounded-lg shadow-2xl"
       />
       <button
         onclick="navigateLightbox(1)"
-        class="absolute right-4 text-white text-4xl px-3"
+        class="absolute right-8 text-slate-400 hover:text-white text-6xl font-light transition-colors px-4"
       >
-        ›
+        &rsaquo;
       </button>
     </div>
 
@@ -214,18 +260,27 @@
 
       window.addEventListener("DOMContentLoaded", () => {
         imageSources = Array.from(
-          document.querySelectorAll('img[onclick^="openLightbox"]')
+          document.querySelectorAll('img[onclick^="openLightbox"]'),
         ).map((img) => img.src);
       });
 
       function openLightbox(index) {
         currentIndex = index;
         document.getElementById("lightbox-img").src = imageSources[index];
-        document.getElementById("lightbox").classList.remove("hidden");
+        const lb = document.getElementById("lightbox");
+        lb.classList.remove("hidden");
+        // small delay to allow display:block to apply before fading in
+        setTimeout(() => {
+          lb.style.opacity = "1";
+        }, 10);
       }
 
       function closeLightbox() {
-        document.getElementById("lightbox").classList.add("hidden");
+        const lb = document.getElementById("lightbox");
+        lb.style.opacity = "0";
+        setTimeout(() => {
+          lb.classList.add("hidden");
+        }, 300);
       }
 
       function navigateLightbox(direction) {

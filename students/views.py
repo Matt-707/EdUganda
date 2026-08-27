@@ -80,14 +80,14 @@ def generate_paper_view(request):
             #then we make a good prompt for both the questions and the guide
             question_prompt = paper_generation_prompt(topics_string, selected_difficulty)
 
-            ai_paper = openrouter(question_prompt, model="x-ai/grok-4-fast:free")
+            ai_paper, paper_duration = groq(question_prompt)
 
             marking_prompt= guide_generation_prompt(ai_paper)
 
-            guide_text = openrouter(marking_prompt, model="x-ai/grok-4-fast:free")
+            guide_text, guide_duration = groq(marking_prompt)
 
-            #total_time = generation_time+answer_guide_time
-
+            print(f"Paper Generation Time: {paper_duration}")
+            print(f"Guide Generation Time: {guide_duration}")
             #formatting the prompts for the paper and the guide
             formatted_paper_part = cleaning(ai_paper).split('\n')
             formatted_guide_part = cleaning(guide_text).split('\n')

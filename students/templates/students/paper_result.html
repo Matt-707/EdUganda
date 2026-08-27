@@ -1,99 +1,137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Generated Exam Paper</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
       body {
         margin: 0;
         padding: 40px 20px;
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(to right, #007bff, #00bfff);
-        color: #333;
+        font-family: "Inter", sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
       }
 
       .container {
-        max-width: 800px;
+        max-width: 850px;
         margin: auto;
         background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        padding: 60px;
       }
 
       .exam-header {
         text-align: center;
-        font-weight: 600;
-        font-size: 20px;
+        font-weight: 700;
+        font-size: 22px;
         margin-bottom: 30px;
-        color: #0056b3;
+        color: #064e3b; /* Forest Green */
+        line-height: 1.4;
+      }
+
+      .exam-header span {
+        font-weight: 500;
+        font-size: 16px;
+        color: #475569;
+        display: block;
+        margin-top: 8px;
       }
 
       .instructions {
-        background: #e9f5ff;
-        padding: 15px 20px;
-        border-left: 5px solid #007bff;
-        margin-bottom: 20px;
-        font-weight: 500;
+        background: #f8fafc;
+        padding: 16px 24px;
+        border-left: 4px solid #064e3b;
+        margin-bottom: 30px;
+        font-size: 14px;
+        border-radius: 0 8px 8px 0;
       }
 
       .section-title {
-        font-size: 20px;
-        margin-top: 30px;
-        margin-bottom: 15px;
-        color: #007bff;
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        color: #0f172a;
         text-transform: uppercase;
-        border-bottom: 2px solid #007bff;
-        display: inline-block;
-        padding-bottom: 5px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
       }
 
       .question {
-        margin: 10px 0;
+        margin: 16px 0;
         text-align: justify;
-        line-height: 1.6;
-        font-size: 16px;
+        line-height: 1.7;
+        font-size: 15px;
+        color: #334155;
       }
 
       .actions {
-        margin-top: 40px;
+        margin-top: 50px;
         text-align: center;
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
       }
 
       .actions a,
       .toggle-button {
         display: inline-block;
-        margin: 10px 15px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
+        padding: 12px 24px;
+        background-color: #064e3b;
+        color: #fbbf24; /* Gold */
         text-decoration: none;
         border: none;
         border-radius: 8px;
-        font-size: 15px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: all 0.2s ease;
       }
 
       .actions a:hover,
       .toggle-button:hover {
-        background-color: #0056b3;
+        background-color: #022c22;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .actions a.secondary {
+        background-color: #f1f5f9;
+        color: #475569;
+      }
+      .actions a.secondary:hover {
+        background-color: #e2e8f0;
       }
 
       hr {
         border: 0;
         height: 1px;
-        background: #ddd;
-        margin: 30px 0;
+        background: #e2e8f0;
+        margin: 40px 0;
       }
 
       #guide-section {
         display: none;
-        transition: all 0.4s ease-in-out;
+        margin-top: 20px;
+        animation: fadeIn 0.4s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
 
@@ -110,9 +148,7 @@
             ["\\[", "\\]"],
           ],
         },
-        svg: {
-          fontCache: "global",
-        },
+        svg: { fontCache: "global" },
       };
     </script>
     <script
@@ -123,13 +159,13 @@
   <body>
     <div class="container">
       <div class="exam-header">
-        UGANDA NATIONAL EXAMINATIONS BOARD<br />
-        Advanced Level Physics<br />
-        Time: 2 hours
+        UGANDA NATIONAL EXAMINATIONS BOARD
+        <span>Advanced Level Physics &mdash; Time: 2 hours</span>
       </div>
 
       <div class="instructions">
-        <strong>Instructions:</strong> Answer all questions.
+        <strong>Instructions:</strong> Answer all questions provided in this
+        section.
       </div>
 
       <hr />
@@ -139,27 +175,36 @@
       {% for line in questions %}
       <div class="question">{{ line|safe }}</div>
       {% endfor %} {% else %}
-      <p>No paper generated yet.</p>
+      <p class="question">No paper generated yet.</p>
       {% endif %} {% if guide %}
-      <div class="actions">
+      <div class="actions" style="margin-top: 30px; margin-bottom: 20px">
         <button class="toggle-button" onclick="toggleGuide()">
-          Show Answer Guide
+          View Answer Guide
         </button>
       </div>
 
       <div id="guide-section">
-        <div class="section-title">Answer Guide</div>
+        <div
+          class="section-title"
+          style="color: #064e3b; border-color: #064e3b"
+        >
+          Answer Guide
+        </div>
         {% for line in guide %}
         <div class="question">{{ line|safe }}</div>
         {% endfor %}
       </div>
       {% else %}
-      <p>No answer guide generated yet.</p>
+      <p class="question" style="text-align: center; margin-top: 40px">
+        No answer guide generated yet.
+      </p>
       {% endif %}
+
+      <hr />
 
       <div class="actions">
         <a href="{% url 'generate_paper' %}">Generate Another</a>
-        <a href="{% url 'ask_ai' %}">Chat with AI</a>
+        <a href="{% url 'ask_ai' %}" class="secondary">Return to Assistant</a>
       </div>
     </div>
 
@@ -176,11 +221,10 @@
           }
         } else {
           section.style.display = "none";
-          button.textContent = "Show Answer Guide";
+          button.textContent = "View Answer Guide";
         }
       }
     </script>
-
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         if (window.MathJax) {
