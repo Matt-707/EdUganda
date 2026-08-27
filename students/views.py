@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .forms import PaperGenerationForm
 
 #importing API clients for AI interactions
-from .api_clients import groq, openrouter, ollama_version, together_ai
+from .api_clients import groq, openrouter, ollama_version
 
 from rag_index.rag_searcher import select_best_index
 
@@ -48,7 +48,9 @@ def ask_ai(request):
 
         final_prompt =  create_chat_prompt(user_input, context)
 
-        raw_ai_response = openrouter(final_prompt)
+        raw_ai_response, duration = groq(final_prompt)
+
+        print(f"Duration: {duration}")
 
         ai_response = cleaning(raw_ai_response)
 
