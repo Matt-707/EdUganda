@@ -9,3 +9,9 @@ pdfs/
 sources/
 extra_design/
 testing/
+
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
