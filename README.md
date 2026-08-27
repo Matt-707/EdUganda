@@ -1,29 +1,29 @@
-# AI-Based Education Platform (Eduganda)
+# EdUganda
 
-This project is an early-stage prototype of an AI-powered education platform designed to generate UNEB-style examination questions and marking guides for students.
+This project is a prototype education platform designed to generate UNEB-style examination questions and marking guides.
 
-## 🚀 Features
+## Features
 
-- AI-generated exam questions based on selected topics
-- Automated marking guide generation
-- Web-based interface built using Django
-- Focus on improving access to revision materials for Ugandan students
+- Generates exam questions based on selected topics
+- Produces automated marking guides
+- Web interface built with Django
+- Provides accessible revision materials for Ugandan students
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - Python
 - Django
 - HTML/CSS
-- AI APIs / Language Models
+- LLM APIs
 
-## 📚 Purpose
+## Purpose
 
-The goal of this project is to bridge the gap between students and high-quality exam preparation resources by leveraging artificial intelligence.
+To provide students with accessible, high-quality exam preparation resources.
 
-## ⚠️ Note
+## Note
 
-This project is currently under active development and represents an early prototype of a larger system.
+This project is an early prototype and is currently under active development.
 
-## 👨‍💻 Author
+## Author
 
-Matthew Ho
+Matthew Asiimwe Ho
